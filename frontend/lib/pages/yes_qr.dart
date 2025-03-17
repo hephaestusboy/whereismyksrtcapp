@@ -11,21 +11,22 @@ class YesQRPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return WillPopScope(
       onWillPop: () async {
-        context.go('/popup'); // Redirect to PopupPage when back is pressed
-        return false; // Prevent default back behavior
+        context.go('/popup'); // Go back to popup page when back button is pressed
+        return false;
       },
       child: Scaffold(
         appBar: AppBar(
           title: const Text(
             "QR Code Scanner",
-            style: TextStyle(fontWeight: FontWeight.bold),
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
           ),
-          backgroundColor: const Color.fromARGB(255, 255, 254, 254),
+          backgroundColor: Colors.redAccent,
           leading: IconButton(
-            icon: const Icon(Icons.arrow_back),
-            onPressed: () {
-              context.go('/popup'); // Redirect to PopupPage
-            },
+            icon: const Icon(Icons.arrow_back, color: Colors.white),
+            onPressed: () => context.go('/popup'),
           ),
         ),
         body: Container(
@@ -51,8 +52,8 @@ class YesQRPage extends StatelessWidget {
                 ),
                 const SizedBox(height: 20),
                 Container(
-                  height: 220,
-                  width: 220,
+                  height: 280,
+                  width: 280,
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(15),
@@ -64,25 +65,24 @@ class YesQRPage extends StatelessWidget {
                       ),
                     ],
                   ),
-                  child: const Center(
-                    child: Icon(Icons.qr_code_scanner, size: 120, color: Colors.black54),
-                  ),
-                ),
-                const SizedBox(height: 30),
-                ElevatedButton(
-                  onPressed: () {
-                    context.go('/yes_map'); // Redirect to PopupPage
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                  ),
-                  child: const Text(
-                    "Next",
-                    style: TextStyle(color: Color(0xFF03693B), fontWeight: FontWeight.bold),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: const [
+                      Icon(
+                        Icons.qr_code_scanner,
+                        size: 120,
+                        color: Colors.redAccent,
+                      ),
+                      SizedBox(height: 16),
+                      Text(
+                        "QR Scanner Ready",
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.black54,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],

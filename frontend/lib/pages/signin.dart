@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import '../services/api_service.dart';
 
 class SignInWidget extends StatefulWidget {
-  const SignInWidget({super.key});
+  final ApiService? apiService;
+  const SignInWidget({super.key, this.apiService});
 
   static String routeName = 'SignIn';
   static String routePath = '/sign-in';
@@ -13,6 +15,8 @@ class SignInWidget extends StatefulWidget {
 
 class _SignInWidgetState extends State<SignInWidget> {
   final _formKey = GlobalKey<FormState>();
+  late final ApiService _apiService;
+  bool _isLoading = false;
 
   late TextEditingController _emailController;
   late TextEditingController _passwordController;
@@ -21,6 +25,7 @@ class _SignInWidgetState extends State<SignInWidget> {
   @override
   void initState() {
     super.initState();
+    _apiService = widget.apiService ?? ApiService();
     _emailController = TextEditingController();
     _passwordController = TextEditingController();
   }
@@ -32,49 +37,74 @@ class _SignInWidgetState extends State<SignInWidget> {
     super.dispose();
   }
 
-  void _signIn() {
+  Future<void> _signIn() async {
     if (_formKey.currentState!.validate()) {
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-          ),
-          contentPadding: const EdgeInsets.all(20),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(Icons.check_circle, color: Colors.green, size: 60),
-              const SizedBox(height: 12),
-              const Text(
-                'Success!',
-                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 8),
-              const Text(
-                'You have signed in successfully.',
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 16, color: Colors.black54),
-              ),
-              const SizedBox(height: 16),
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.of(context).pop(); // Close the dialog
-                  context.go('/popup'); // Redirect to popup.dart
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.green,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+      setState(() => _isLoading = true);
+      
+      try {
+        await _apiService.signIn(
+          _emailController.text.trim(),
+          _passwordController.text,
+        );
+
+        if (!mounted) return;
+        
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (context) => AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
+            contentPadding: const EdgeInsets.all(20),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.check_circle, color: Colors.green, size: 60),
+                const SizedBox(height: 12),
+                const Text(
+                  'Success!',
+                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
                 ),
-                child: const Text('OK', style: TextStyle(color: Colors.white)),
-              ),
-            ],
+                const SizedBox(height: 8),
+                const Text(
+                  'You have signed in successfully.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 16, color: Colors.black54),
+                ),
+                const SizedBox(height: 16),
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.of(context).pop(); // Close the dialog
+                    context.go('/popup'); // Redirect to popup.dart
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.green,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                  ),
+                  child: const Text('OK', style: TextStyle(color: Colors.white)),
+                ),
+              ],
+            ),
           ),
-        ),
-      );
+        );
+      } catch (e) {
+        if (!mounted) return;
+        
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(e.toString()),
+            backgroundColor: Colors.red,
+          ),
+        );
+      } finally {
+        if (mounted) {
+          setState(() => _isLoading = false);
+        }
+      }
     }
   }
 
@@ -99,7 +129,7 @@ class _SignInWidgetState extends State<SignInWidget> {
                     } else {
                         context.go('/');
                    }
-          },
+                    },
                   ),
                   const SizedBox(height: 24),
                   const Text(
@@ -143,7 +173,7 @@ class _SignInWidgetState extends State<SignInWidget> {
                         ),
                         const SizedBox(height: 25),
                         ElevatedButton(
-                          onPressed: _signIn,
+                          onPressed: _isLoading ? null : _signIn,
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.redAccent,
                             shape: RoundedRectangleBorder(
@@ -155,14 +185,23 @@ class _SignInWidgetState extends State<SignInWidget> {
                             ),
                             minimumSize: const Size(double.infinity, 50),
                           ),
-                          child: const Text(
-                            'Sign In',
-                            style: TextStyle(color: Colors.white),
-                          ),
+                          child: _isLoading
+                              ? const SizedBox(
+                                  height: 20,
+                                  width: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                  ),
+                                )
+                              : const Text(
+                                  'Sign In',
+                                  style: TextStyle(color: Colors.white),
+                                ),
                         ),
                         const SizedBox(height: 14),
                         TextButton(
-                          onPressed: () => context.go('/create-acc'),
+                          onPressed: _isLoading ? null : () => context.go('/create-acc'),
                           child: const Text("Don't have an account? Create one"),
                         ),
                       ],

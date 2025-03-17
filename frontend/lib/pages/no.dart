@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import '../services/api_service.dart';
 
 class NoPage extends StatefulWidget {
-  const NoPage({super.key});
+  final ApiService? apiService;
+  const NoPage({super.key, this.apiService});
 
   static String routeName = 'no';
   static String routePath = '/no';
@@ -15,6 +17,9 @@ class _NoPageState extends State<NoPage> with SingleTickerProviderStateMixin {
   String? startLocation;
   String? destination;
   bool isSearched = false;
+  bool _isLoading = false;
+  List<Map<String, dynamic>> _searchResults = [];
+  late final ApiService _apiService;
   late AnimationController _animationController;
   late Animation<double> _fadeInAnimation;
 
@@ -26,6 +31,7 @@ class _NoPageState extends State<NoPage> with SingleTickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
+    _apiService = widget.apiService ?? ApiService();
     _animationController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 500),
@@ -42,12 +48,35 @@ class _NoPageState extends State<NoPage> with SingleTickerProviderStateMixin {
     super.dispose();
   }
 
-  void _searchBus() {
+  Future<void> _searchBus() async {
     if (startLocation != null && destination != null) {
-      setState(() {
-        isSearched = true;
-      });
-      _animationController.forward();
+      setState(() => _isLoading = true);
+      
+      try {
+        final results = await _apiService.searchBuses(
+          startLocation!,
+          destination!,
+        );
+        
+        setState(() {
+          _searchResults = results;
+          isSearched = true;
+          _isLoading = false;
+        });
+        
+        _animationController.forward();
+      } catch (e) {
+        setState(() => _isLoading = false);
+        
+        if (!mounted) return;
+        
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(e.toString()),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -128,9 +157,20 @@ class _NoPageState extends State<NoPage> with SingleTickerProviderStateMixin {
         curve: Curves.easeInOut,
         width: isSearched ? 180 : double.infinity,
         child: ElevatedButton.icon(
-          onPressed: _searchBus,
-          icon: const Icon(Icons.search, color: Colors.white),
-          label: const Text("Search", style: TextStyle(color: Colors.white)),
+          onPressed: _isLoading ? null : _searchBus,
+          icon: _isLoading 
+            ? const SizedBox(
+                height: 20,
+                width: 20,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                ),
+              )
+            : const Icon(Icons.search, color: Colors.white),
+          label: Text(_isLoading ? "Searching..." : "Search", 
+            style: const TextStyle(color: Colors.white)
+          ),
           style: ElevatedButton.styleFrom(
             backgroundColor: Colors.redAccent,
             minimumSize: const Size(double.infinity, 50),
@@ -142,76 +182,94 @@ class _NoPageState extends State<NoPage> with SingleTickerProviderStateMixin {
   }
 
   Widget _buildBusDetails(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(12.0),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 6,
-            offset: const Offset(0, 3),
-          )
-        ],
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              RichText(
-                text: TextSpan(
-                  children: [
-                    const TextSpan(
-                      text: "Bus ",
-                      style: TextStyle(color: Colors.black, fontSize: 16),
-                    ),
-                    TextSpan(
-                      text: "01",
-                      style: TextStyle(
-                        color: const Color.fromARGB(255, 144, 5, 5),
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
+    if (_searchResults.isEmpty) {
+      return const Center(
+        child: Text(
+          "No buses found for this route",
+          style: TextStyle(fontSize: 16, color: Colors.black54),
+        ),
+      );
+    }
+
+    return Column(
+      children: _searchResults.map((bus) => Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.all(12.0),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 6,
+              offset: const Offset(0, 3),
+            )
+          ],
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                RichText(
+                  text: TextSpan(
+                    children: [
+                      const TextSpan(
+                        text: "Bus ",
+                        style: TextStyle(color: Colors.black, fontSize: 16),
                       ),
+                      TextSpan(
+                        text: bus['id']?.toString() ?? 'N/A',
+                        style: const TextStyle(
+                          color: Color.fromARGB(255, 144, 5, 5),
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  "${bus['departure_point']} - ${bus['arrival_point']}",
+                  style: const TextStyle(fontSize: 14, color: Colors.black54),
+                ),
+              ],
+            ),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text(
+                  bus['estimated_time'] ?? "Time not available",
+                  style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)
+                ),
+                const SizedBox(height: 8),
+                GestureDetector(
+                  onTap: () {
+                    context.push('/no-map', extra: {
+                      'busId': bus['id'],
+                      'destination': bus['arrival_point']
+                    });
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.green, width: 2),
                     ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                "$startLocation - $destination",
-                style: const TextStyle(fontSize: 14, color: Colors.black54),
-              ),
-            ],
-          ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              const Text("15 Minutes away", style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 8),
-              GestureDetector(
-                onTap: () {
-                  context.push('/no-map', extra: destination);
-                },
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.green, width: 2),
-                  ),
-                  child: const Text(
-                    "Select Bus",
-                    style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold),
+                    child: const Text(
+                      "Select Bus",
+                      style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold),
+                    ),
                   ),
                 ),
-              ),
-            ],
-          ),
-        ],
-      ),
+              ],
+            ),
+          ],
+        ),
+      )).toList(),
     );
   }
 
