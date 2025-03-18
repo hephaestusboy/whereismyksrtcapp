@@ -42,7 +42,8 @@ class _NoMapScreenState extends State<NoMapScreen> {
 
   Future<void> _updateBusLocation() async {
     try {
-      final location = await _apiService.getBusLocation(widget.routeInfo['busId'].toString());
+      final location = await _apiService
+          .getBusLocation(widget.routeInfo['busId'].toString());
       if (mounted) {
         setState(() {
           _busLocation = location;
@@ -63,7 +64,7 @@ class _NoMapScreenState extends State<NoMapScreen> {
   void _startLocationUpdates() {
     // Initial update
     _updateBusLocation();
-    
+
     // Set up periodic updates every 30 seconds
     _locationTimer = Timer.periodic(const Duration(seconds: 30), (timer) {
       _updateBusLocation();
@@ -84,7 +85,8 @@ class _NoMapScreenState extends State<NoMapScreen> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Icon(Icons.error_outline, size: 48, color: Colors.red),
+                      const Icon(Icons.error_outline,
+                          size: 48, color: Colors.red),
                       const SizedBox(height: 16),
                       Text(
                         _error!,
@@ -115,7 +117,8 @@ class _NoMapScreenState extends State<NoMapScreen> {
                         ),
                         if (_busLocation != null)
                           Positioned(
-                            left: _busLocation!['latitude'] * 100, // Convert coordinates to screen position
+                            left: _busLocation!['latitude'] *
+                                100, // Convert coordinates to screen position
                             top: _busLocation!['longitude'] * 100,
                             child: const Icon(
                               Icons.directions_bus,
@@ -161,10 +164,12 @@ class _NoMapScreenState extends State<NoMapScreen> {
                                 const Divider(thickness: 1, color: Colors.grey),
                                 const SizedBox(height: 8),
                                 Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
                                   children: [
                                     Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: [
                                         const Text(
                                           "Last Updated",
@@ -183,7 +188,8 @@ class _NoMapScreenState extends State<NoMapScreen> {
                                       ],
                                     ),
                                     Column(
-                                      crossAxisAlignment: CrossAxisAlignment.end,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.end,
                                       children: [
                                         const Text(
                                           "Status",
@@ -207,7 +213,10 @@ class _NoMapScreenState extends State<NoMapScreen> {
                               ],
                             ),
                           ),
-                        ).animate().fade(duration: 600.ms).slideY(begin: 1, end: 0, curve: Curves.easeOut),
+                        )
+                            .animate()
+                            .fade(duration: 600.ms)
+                            .slideY(begin: 1, end: 0, curve: Curves.easeOut),
                       ),
                     ),
                   ],

@@ -48,12 +48,18 @@ class MyApp extends StatelessWidget {
         builder: (context, state) => const YesMapPage(),
       ),
       GoRoute(
-          path: '/no-map',
-          builder: (context, state) {
-            final String destination =
-                state.extra as String? ?? "Unknown Destination";
-            return NoMapScreen(destination: destination);
-          },),
+        path: '/no-map',
+        builder: (context, state) {
+          final String destination =
+              state.extra as String? ?? "Unknown Destination";
+          return NoMapScreen(
+            routeInfo: {
+              'destination': destination,
+              'busId': '1', // You might want to pass this from somewhere
+            },
+          );
+        },
+      ),
     ],
   );
 

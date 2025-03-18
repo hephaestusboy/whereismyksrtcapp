@@ -41,7 +41,7 @@ class _CreateAccPageState extends State<CreateAccPage> {
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
-          icon: Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back),
           onPressed: () {
             if (Navigator.of(context).canPop()) {
               context.pop();
@@ -61,15 +61,15 @@ class _CreateAccPageState extends State<CreateAccPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
+                const Text(
                   'Welcome Onboard!',
                   style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
                 ),
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
                 _buildInputField('Full Name', _fullNameController, false),
                 _buildEmailField(),
                 _buildInputField('Password', _passwordController, true),
-                SizedBox(height: 24),
+                const SizedBox(height: 24),
                 _buildCreateAccountButton(),
               ],
             ),
@@ -81,15 +81,15 @@ class _CreateAccPageState extends State<CreateAccPage> {
 
   Widget _buildInputField(String label, TextEditingController controller, bool isPassword) {
     return Padding(
-      padding: EdgeInsets.only(top: 18),
+      padding: const EdgeInsets.only(top: 18),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             label,
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
           ),
-          SizedBox(height: 4),
+          const SizedBox(height: 4),
           TextFormField(
             controller: controller,
             obscureText: isPassword ? !_passwordVisible : false,
@@ -124,15 +124,15 @@ class _CreateAccPageState extends State<CreateAccPage> {
 
   Widget _buildEmailField() {
     return Padding(
-      padding: EdgeInsets.only(top: 18),
+      padding: const EdgeInsets.only(top: 18),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
+          const Text(
             'Email',
             style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
           ),
-          SizedBox(height: 4),
+          const SizedBox(height: 4),
           TextFormField(
             controller: _emailController,
             keyboardType: TextInputType.emailAddress,
@@ -228,7 +228,7 @@ class _CreateAccPageState extends State<CreateAccPage> {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
           ),
-          title: Column(
+          title: const Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               Icon(Icons.check_circle, size: 60, color: Colors.green),
@@ -240,7 +240,7 @@ class _CreateAccPageState extends State<CreateAccPage> {
               ),
             ],
           ),
-          content: Text(
+          content: const Text(
             "Your account has been successfully created.",
             textAlign: TextAlign.center,
           ),

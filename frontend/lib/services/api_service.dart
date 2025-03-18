@@ -7,6 +7,7 @@ class ApiService {
   ApiService._internal();
 
   String? _token;
+  // Use Render deployment URL
   final String baseUrl = 'https://whereismyksrtc.onrender.com';
 
   // Getter for token
@@ -28,15 +29,20 @@ class ApiService {
         _token = json.decode(response.body)['token'];
         return json.decode(response.body);
       } else {
-        throw Exception('Failed to sign in: ${response.body}');
+        final error = json.decode(response.body);
+        throw error['message'] ?? 'Failed to sign in';
       }
     } catch (e) {
+      if (e.toString().contains('Connection refused')) {
+        throw 'Unable to connect to server. Please check your connection.';
+      }
       throw e.toString();
     }
   }
 
   // Sign Up
-  Future<Map<String, dynamic>> signUp(String fullName, String email, String password) async {
+  Future<Map<String, dynamic>> signUp(
+      String fullName, String email, String password) async {
     try {
       final response = await http.post(
         Uri.parse('$baseUrl/api/auth/signup'),
@@ -56,12 +62,16 @@ class ApiService {
         throw data['message'] ?? 'Sign up failed';
       }
     } catch (e) {
+      if (e.toString().contains('Connection refused')) {
+        throw 'Unable to connect to server. Please check your connection.';
+      }
       throw e.toString();
     }
   }
 
   // Search Buses
-  Future<List<Map<String, dynamic>>> searchBuses(String departurePoint, String arrivalPoint) async {
+  Future<List<Map<String, dynamic>>> searchBuses(
+      String departurePoint, String arrivalPoint) async {
     try {
       if (_token == null) throw 'Not authenticated';
 
@@ -82,9 +92,13 @@ class ApiService {
         final List<dynamic> data = json.decode(response.body);
         return data.cast<Map<String, dynamic>>();
       } else {
-        throw json.decode(response.body)['message'] ?? 'Failed to search buses';
+        final error = json.decode(response.body);
+        throw error['message'] ?? 'Failed to search buses';
       }
     } catch (e) {
+      if (e.toString().contains('Connection refused')) {
+        throw 'Unable to connect to server. Please check your connection.';
+      }
       throw e.toString();
     }
   }
@@ -107,10 +121,14 @@ class ApiService {
       if (response.statusCode == 200) {
         return json.decode(response.body);
       } else {
-        throw json.decode(response.body)['message'] ?? 'Failed to get bus location';
+        final error = json.decode(response.body);
+        throw error['message'] ?? 'Failed to get bus location';
       }
     } catch (e) {
+      if (e.toString().contains('Connection refused')) {
+        throw 'Unable to connect to server. Please check your connection.';
+      }
       throw e.toString();
     }
   }
-} 
+}

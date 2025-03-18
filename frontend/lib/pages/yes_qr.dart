@@ -57,7 +57,7 @@ class YesQRPage extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(15),
-                    boxShadow: [
+                    boxShadow: const [
                       BoxShadow(
                         color: Colors.black26,
                         blurRadius: 10,
@@ -65,9 +65,9 @@ class YesQRPage extends StatelessWidget {
                       ),
                     ],
                   ),
-                  child: Column(
+                  child: const Column(
                     mainAxisAlignment: MainAxisAlignment.center,
-                    children: const [
+                    children: [
                       Icon(
                         Icons.qr_code_scanner,
                         size: 120,

@@ -19,7 +19,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 version: 1.0.0+1
 
 environment:
-  sdk: ^3.6.1
+  sdk: ">=3.0.0 <4.0.0"
 
 # Dependencies specify other packages that your package needs in order to work.
 # To automatically upgrade your package dependencies to the latest versions
@@ -30,11 +30,15 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  flutter_animate: ^4.5.0  # Use the latest version
+  flutter_animate: ^4.5.0
   cupertino_icons: ^1.0.8
   go_router: ^14.8.0
-  http: ^1.2.1  # Adding http package
-
+  http: ^1.2.1
+  qr_code_scanner: ^1.0.1
+  flutter_map: ^6.1.0
+  latlong2: ^0.9.0
+  permission_handler: ^11.3.0
+  geolocator: ^10.1.0
 
 dev_dependencies:
   flutter_test:
@@ -54,9 +58,9 @@ dev_dependencies:
 # The following section is specific to Flutter packages.
 flutter:
   uses-material-design: true
-  # Commenting out until we have the actual image
-  # assets:
-  #   - assets/bustoon.png
+  assets:
+    - assets/images/bustoon.png
+    - assets/images/
 
   # To add assets to your application, add an assets section, like this:
   # assets:

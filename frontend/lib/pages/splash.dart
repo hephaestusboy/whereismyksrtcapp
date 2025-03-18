@@ -13,7 +13,7 @@ class SplashPage extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Image.asset(
-              'assets/bustoon.png', // Use the local asset image
+              'assets/images/bustoon.png',
               width: 300,
               height: 200,
               fit: BoxFit.cover,
@@ -48,7 +48,8 @@ class SplashPage extends StatelessWidget {
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.redAccent,
-                padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 15),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 40, vertical: 15),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(25),
                 ),

@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:go_router/go_router.dart';
 
 class YesMapPage extends StatefulWidget {
@@ -8,179 +12,103 @@ class YesMapPage extends StatefulWidget {
   static String routePath = '/yes_map';
 
   @override
-  _YesMapPageState createState() => _YesMapPageState();
+  State<YesMapPage> createState() => _YesMapPageState();
 }
 
 class _YesMapPageState extends State<YesMapPage> {
-  String? selectedDestination;
-  int? estimatedTime;
+  MapController mapController = MapController();
+  LatLng? currentLocation;
+  bool isLoading = true;
 
-  final Map<String, int> destinationTimes = {
-    'Ernakulam': 10,
-    'Aluva': 15,
-    'Thrissur': 30,
-    'Kottayam': 40,
-    'Kollam': 60,
-    'Trivandrum': 90
-  };
+  @override
+  void initState() {
+    super.initState();
+    _getCurrentLocation();
+  }
 
-  void _showExitDialog() {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text("Exit Navigation"),
-          content: const Text("Are you sure you want to exit navigation?"),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context); // Stay on the page
-              },
-              child: const Text("Cancel"),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();  // Close the dialog first
-                context.go('/popup');// Navigate to popup.dart
-              },
-              child: const Text("Yes"),
-            ),
-          ],
+  Future<void> _getCurrentLocation() async {
+    try {
+      // Request location permission
+      final status = await Permission.location.request();
+      if (status.isGranted) {
+        // Get current position
+        final position = await Geolocator.getCurrentPosition(
+          desiredAccuracy: LocationAccuracy.high,
         );
-      },
-    );
+
+        setState(() {
+          currentLocation = LatLng(position.latitude, position.longitude);
+          isLoading = false;
+        });
+
+        // Move map to current location
+        mapController.move(currentLocation!, 15.0);
+      } else {
+        setState(() {
+          isLoading = false;
+        });
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Location permission is required')),
+          );
+        }
+      }
+    } catch (e) {
+      setState(() {
+        isLoading = false;
+      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error getting location: $e')),
+        );
+      }
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Bus Location"),
-        backgroundColor: const Color.fromARGB(255, 244, 245, 244),
+        title: const Text(
+          'Bus Location',
+          style: TextStyle(color: Colors.white),
+        ),
+        backgroundColor: Colors.redAccent,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () => context.go('/popup'),
+        ),
       ),
-      body: Column(
-        children: [
-          // Map Image from URL
-          Expanded(
-            child: Center(
-              child: Image.network(
-                'https://cdn-images-1.medium.com/max/1024/1*gpJFqG9Np7o75-6Wl5hXGg.png',
-                width: double.infinity,
-                fit: BoxFit.cover,
-                loadingBuilder: (context, child, loadingProgress) {
-                  if (loadingProgress == null) return child;
-                  return const Center(child: CircularProgressIndicator());
-                },
-                errorBuilder: (context, error, stackTrace) {
-                  return const Center(child: Text("Failed to load map"));
-                },
-              ),
-            ),
-          ),
-
-          // Destination Selection and Bus Info Section
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: const BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(20),
-                topRight: Radius.circular(20),
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black26,
-                  blurRadius: 5,
-                  spreadRadius: 2,
-                ),
-              ],
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // Destination Dropdown
-                DropdownButtonFormField<String>(
-                  value: selectedDestination,
-                  hint: const Text("Select Destination"),
-                  decoration: InputDecoration(
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 16, vertical: 12),
+      body: isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : currentLocation == null
+              ? const Center(child: Text('Location not available'))
+              : FlutterMap(
+                  mapController: mapController,
+                  options: MapOptions(
+                    center: currentLocation,
+                    zoom: 15.0,
                   ),
-                  items: destinationTimes.keys.map((destination) {
-                    return DropdownMenuItem(
-                      value: destination,
-                      child: Text(destination),
-                    );
-                  }).toList(),
-                  onChanged: (value) {
-                    setState(() {
-                      selectedDestination = value;
-                      estimatedTime = destinationTimes[value];
-                    });
-                  },
-                ),
-                const SizedBox(height: 20),
-
-                // Bus Location Info
-                const Text(
-                  "Bus Location: Near Kochi, Kerala",
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 10),
-
-                // Estimated Time Display
-                Text.rich(
-                  TextSpan(
-                    text: selectedDestination == null
-                        ? "Select a destination to see estimated time."
-                        : "Your bus is currently at XYZ Stop and will reach ",
-                    style: const TextStyle(fontSize: 16),
-                    children: selectedDestination != null
-                        ? [
-                            TextSpan(
-                              text: "$selectedDestination ",
-                              style: const TextStyle(
-                                  fontSize: 16, fontWeight: FontWeight.bold),
-                            ),
-                            const TextSpan(text: "in "),
-                            TextSpan(
-                              text: "$estimatedTime minutes.",
-                              style: const TextStyle(
-                                  fontSize: 16, fontWeight: FontWeight.bold),
-                            ),
-                          ]
-                        : [],
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 20),
-
-                // Exit Navigation Button
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: _showExitDialog,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.redAccent,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(25),
-                      ),
-                      minimumSize: const Size(double.infinity, 50),
+                  children: [
+                    TileLayer(
+                      urlTemplate:
+                          'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                      userAgentPackageName: 'com.bus.tracker',
                     ),
-                    child: const Text(
-                      "Exit Navigation",
-                      style: TextStyle(color: Colors.white, fontSize: 16),
+                    MarkerLayer(
+                      markers: [
+                        Marker(
+                          point: currentLocation!,
+                          child: const Icon(
+                            Icons.location_pin,
+                            color: Colors.red,
+                            size: 40,
+                          ),
+                        ),
+                      ],
                     ),
-                  ),
+                  ],
                 ),
-              ],
-            ),
-          ),
-        ],
-      ),
     );
   }
 }
