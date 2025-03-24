@@ -51,20 +51,31 @@ class MyApp extends StatelessWidget {
         },
       ),
       GoRoute(
-        path: '/no-map',
+        path: NoMapPage.routePath,
         name: NoMapPage.routeName,
         builder: (context, state) {
-          final routeInfo = state.extra as Map<String, dynamic>? ?? {
-            'destination': 'Unknown',
-            'busId': '1',
-            'latitude': 0,
-            'longitude': 0,
-            'speed': 0,
-            'updated_at': 'Unknown',
-          };
+          // Safe type handling with platform-specific fallbacks
+          Map<String, dynamic> routeInfo;
+
+          if (state.extra is Map<String, dynamic>) {
+            routeInfo = state.extra as Map<String, dynamic>;
+          } else if (state.extra is Map) {
+            // Handle non-typed Map cases (common in release builds)
+            routeInfo = Map<String, dynamic>.from(state.extra as Map);
+          } else {
+            // Fallback for all other cases
+            routeInfo = {
+              'destination': 'Unknown Destination',
+              'busId': '1',
+              'latitude': 0.0,
+              'longitude': 0.0,
+              'speed': 0.0,
+              'updated_at': 'Unknown',
+            };
+          }
 
           return NoMapPage(
-            busId: routeInfo['busId'],
+            busId: routeInfo['busId']?.toString() ?? '1',
             routeInfo: routeInfo,
           );
         },

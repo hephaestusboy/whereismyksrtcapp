@@ -29,6 +29,13 @@ class _NoMapPageState extends State<NoMapPage> {
   double? _speed;
   String? _lastUpdated;
 
+  double _ensureDouble(dynamic value) {
+    if (value == null) return 0.0;
+    if (value is double) return value;
+    if (value is int) return value.toDouble();
+    return double.tryParse(value.toString()) ?? 0.0;
+  }
+
   @override
   void initState() {
     super.initState();
@@ -43,26 +50,22 @@ class _NoMapPageState extends State<NoMapPage> {
   }
 
   void _initializeFromRouteInfo() {
-    final lat = double.tryParse(widget.routeInfo['latitude']?.toString() ?? '0');
-    final lng = double.tryParse(widget.routeInfo['longitude']?.toString() ?? '0');
-    print('Initial coordinates from route: ($lat, $lng)'); // Debug log
+    // Platform-agnostic type conversion
+    final lat = _ensureDouble(widget.routeInfo['latitude']);
+    final lng = _ensureDouble(widget.routeInfo['longitude']);
 
-    if (lat != null && lng != null) {
-      setState(() {
-        _busPosition = LatLng(lat, lng);
-        _speed = double.tryParse(widget.routeInfo['speed']?.toString() ?? '0');
-        _lastUpdated = widget.routeInfo['updated_at']?.toString();
-        _isLoading = false;
-      });
+    setState(() {
+      _busPosition = LatLng(lat, lng);
+      _speed = _ensureDouble(widget.routeInfo['speed']);
+      _lastUpdated = widget.routeInfo['updated_at']?.toString();
+      _isLoading = false;
+    });
 
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (_busPosition != null) {
-          _mapController.move(_busPosition!, 15.0);
-        }
-      });
-    } else {
-      _startLocationUpdates();
-    }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_busPosition != null) {
+        _mapController.move(_busPosition!, 15.0);
+      }
+    });
   }
 
   @override

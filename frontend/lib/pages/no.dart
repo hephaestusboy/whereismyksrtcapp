@@ -48,28 +48,36 @@ class _NoPageState extends State<NoPage> with SingleTickerProviderStateMixin {
     super.dispose();
   }
 
+  // Helper method to ensure double values
+  double _ensureDouble(dynamic value) {
+    if (value == null) return 0.0;
+    if (value is double) return value;
+    if (value is int) return value.toDouble();
+    return double.tryParse(value.toString()) ?? 0.0;
+  }
+
   Future<void> _searchBus() async {
     if (startLocation != null && destination != null) {
       setState(() => _isLoading = true);
-      
+
       try {
         final results = await _apiService.searchBuses(
           startLocation!,
           destination!,
         );
-        
+
         setState(() {
           _searchResults = results;
           isSearched = true;
           _isLoading = false;
         });
-        
+
         _animationController.forward();
       } catch (e) {
         setState(() => _isLoading = false);
-        
+
         if (!mounted) return;
-        
+
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(e.toString()),
@@ -84,6 +92,48 @@ class _NoPageState extends State<NoPage> with SingleTickerProviderStateMixin {
           backgroundColor: Colors.redAccent,
         ),
       );
+    }
+  }
+
+  Future<void> _navigateToBusMap(BuildContext context, Map<String, dynamic> bus) async {
+    try {
+      // Show loading indicator
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Fetching bus location..."),
+          duration: Duration(seconds: 1),
+        ),
+      );
+
+      // Fetch location data
+      final locationData = await _apiService.getBusLocation(bus['bus_id'].toString());
+
+      // Prepare navigation data with proper types
+      final navigationData = {
+        'busId': bus['bus_id'].toString(),
+        'destination': bus['arrival_point'].toString(),
+        'latitude': _ensureDouble(locationData['latitude']),
+        'longitude': _ensureDouble(locationData['longitude']),
+        'speed': _ensureDouble(locationData['speed']),
+        'updated_at': locationData['updated_at']?.toString() ?? 'Unknown',
+      };
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+        context.pushNamed(
+          'no_map', // Using the route name defined in NoMapPage
+          extra: navigationData,
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("Error: ${e.toString()}"),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 
@@ -158,18 +208,18 @@ class _NoPageState extends State<NoPage> with SingleTickerProviderStateMixin {
         width: isSearched ? 180 : double.infinity,
         child: ElevatedButton.icon(
           onPressed: _isLoading ? null : _searchBus,
-          icon: _isLoading 
-            ? const SizedBox(
-                height: 20,
-                width: 20,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                ),
-              )
-            : const Icon(Icons.search, color: Colors.white),
-          label: Text(_isLoading ? "Searching..." : "Search", 
-            style: const TextStyle(color: Colors.white)
+          icon: _isLoading
+              ? const SizedBox(
+            height: 20,
+            width: 20,
+            child: CircularProgressIndicator(
+              strokeWidth: 2,
+              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+            ),
+          )
+              : const Icon(Icons.search, color: Colors.white),
+          label: Text(_isLoading ? "Searching..." : "Search",
+              style: const TextStyle(color: Colors.white)
           ),
           style: ElevatedButton.styleFrom(
             backgroundColor: Colors.redAccent,
@@ -241,17 +291,12 @@ class _NoPageState extends State<NoPage> with SingleTickerProviderStateMixin {
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Text(
-                  bus['estimated_time'] ?? "Time not available",
-                  style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)
+                    bus['estimated_time'] ?? "Time not available",
+                    style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)
                 ),
                 const SizedBox(height: 8),
                 GestureDetector(
-                  onTap: () {
-                    context.push('/no-map', extra: {
-                      'busId': bus['bus_id'],
-                      'destination': bus['arrival_point']
-                    });
-                  },
+                  onTap: () => _navigateToBusMap(context, bus),
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                     decoration: BoxDecoration(
