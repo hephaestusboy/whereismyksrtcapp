@@ -4,7 +4,7 @@
             "outputFile": "com.example.bus.app-mergeDebugResources-29:/values-night-v8/values-night-v8.xml",
             "map": [
                 {
-                    "source": "/home/heph/Documents/whereismyksrtcapp-main/frontend/android/app/src/main/res/values-night/styles.xml",
+                    "source": "/home/heph/Documents/whereismyksrtcapp/frontend/android/app/src/main/res/values-night/styles.xml",
                     "from": {
                         "startLines": "3,14",
                         "startColumns": "4,4",

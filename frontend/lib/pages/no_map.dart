@@ -4,38 +4,65 @@ import 'package:latlong2/latlong.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../services/api_service.dart';
 import 'dart:async';
+import 'package:go_router/go_router.dart';
 
-class NoMapScreen extends StatefulWidget {
+class NoMapPage extends StatefulWidget {
+  const NoMapPage({super.key, required this.busId, required this.routeInfo});
+
+  static String routeName = 'no_map';
+  static String routePath = '/no_map';
+
+  final String busId;
   final Map<String, dynamic> routeInfo;
-  final ApiService? apiService;
-
-  const NoMapScreen({
-    super.key,
-    required this.routeInfo,
-    this.apiService,
-  });
-
-  static String routeName = 'NoMapScreen';
-  static String routePath = '/no-map';
 
   @override
-  State<NoMapScreen> createState() => _NoMapScreenState();
+  State<NoMapPage> createState() => _NoMapPageState();
 }
 
-class _NoMapScreenState extends State<NoMapScreen> {
-  late final ApiService _apiService;
+class _NoMapPageState extends State<NoMapPage> {
+  final MapController _mapController = MapController();
   LatLng? _busPosition;
-  Timer? _locationTimer;
   bool _isLoading = true;
   String? _error;
-
-  final MapController _mapController = MapController();
+  Timer? _locationTimer;
+  late final ApiService _apiService;
+  double? _speed;
+  String? _lastUpdated;
 
   @override
   void initState() {
     super.initState();
-    _apiService = widget.apiService ?? ApiService();
-    _startLocationUpdates();
+    _apiService = ApiService();
+
+    if (widget.routeInfo.containsKey('latitude') &&
+        widget.routeInfo.containsKey('longitude')) {
+      _initializeFromRouteInfo();
+    } else {
+      _startLocationUpdates();
+    }
+  }
+
+  void _initializeFromRouteInfo() {
+    final lat = double.tryParse(widget.routeInfo['latitude']?.toString() ?? '0');
+    final lng = double.tryParse(widget.routeInfo['longitude']?.toString() ?? '0');
+    print('Initial coordinates from route: ($lat, $lng)'); // Debug log
+
+    if (lat != null && lng != null) {
+      setState(() {
+        _busPosition = LatLng(lat, lng);
+        _speed = double.tryParse(widget.routeInfo['speed']?.toString() ?? '0');
+        _lastUpdated = widget.routeInfo['updated_at']?.toString();
+        _isLoading = false;
+      });
+
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (_busPosition != null) {
+          _mapController.move(_busPosition!, 15.0);
+        }
+      });
+    } else {
+      _startLocationUpdates();
+    }
   }
 
   @override
@@ -46,54 +73,37 @@ class _NoMapScreenState extends State<NoMapScreen> {
 
   Future<void> _updateBusLocation() async {
     try {
-      final busId = widget.routeInfo['busId'].toString();
-      final location = await _apiService.getBusLocation(busId);
+      final location = await _apiService.getBusLocation(widget.busId);
+      print('Server response: $location'); // Debug log
 
-      // Print the API response for debugging
-      print('API Response: $location');
+      final lat = double.tryParse(location['latitude']?.toString() ?? '0');
+      final lng = double.tryParse(location['longitude']?.toString() ?? '0');
+      print('Parsed coordinates: ($lat, $lng)'); // Debug log
 
-      // Check if the response contains nested data
-      if (location.containsKey('data')) {
-        final data = location['data'];
-        if (data.containsKey('latitude') && data.containsKey('longitude')) {
-          final newPosition = LatLng(
-            data['latitude'],
-            data['longitude'],
-          );
-
-          if (mounted) {
-            setState(() {
-              _busPosition = newPosition;
-              _isLoading = false;
-              _error = null;
-            });
-
-            // Move map to the new bus position
-            _mapController.move(_busPosition!, 13.0);
-          }
-        } else {
-          throw "Invalid location data received. Missing latitude or longitude.";
-        }
-      } else if (location.containsKey('latitude') && location.containsKey('longitude')) {
-        final newPosition = LatLng(
-          location['latitude'],
-          location['longitude'],
-        );
+      if (lat != null && lng != null) {
+        final newPosition = LatLng(lat, lng);
+        print('New position: $newPosition'); // Debug log
 
         if (mounted) {
           setState(() {
             _busPosition = newPosition;
+            _speed = double.tryParse(location['speed']?.toString() ?? '0');
+            _lastUpdated = location['updated_at']?.toString();
             _isLoading = false;
             _error = null;
           });
 
-          // Move map to the new bus position
-          _mapController.move(_busPosition!, 13.0);
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (_busPosition != null) {
+              _mapController.move(_busPosition!, 15.0);
+            }
+          });
         }
       } else {
-        throw "Invalid location data received. Missing latitude or longitude.";
+        throw "Invalid location data received";
       }
     } catch (e) {
+      print('Error updating bus location: $e'); // Debug log
       if (mounted) {
         setState(() {
           _error = e.toString();
@@ -103,9 +113,10 @@ class _NoMapScreenState extends State<NoMapScreen> {
     }
   }
 
+
   void _startLocationUpdates() {
     _updateBusLocation();
-    _locationTimer = Timer.periodic(const Duration(seconds: 30), (timer) {
+    _locationTimer = Timer.periodic(const Duration(seconds: 10), (timer) {
       _updateBusLocation();
     });
   }
@@ -114,123 +125,205 @@ class _NoMapScreenState extends State<NoMapScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Bus Route"),
+        title: const Text(
+          'Bus Location',
+          style: TextStyle(color: Colors.white),
+        ),
         backgroundColor: Colors.redAccent,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () => context.go('/popup'),
+        ),
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _error != null
-          ? Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.error_outline, size: 48, color: Colors.red),
-            const SizedBox(height: 16),
-            Text(
-              _error!,
-              style: const TextStyle(color: Colors.red),
-              textAlign: TextAlign.center,
+          ? _buildErrorMessage()
+          : _buildMapWithInfo(),
+    );
+  }
+
+  Widget _buildErrorMessage() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Icon(Icons.error_outline, size: 48, color: Colors.red),
+          const SizedBox(height: 16),
+          Text(
+            _error!,
+            style: const TextStyle(color: Colors.red, fontSize: 16),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 16),
+          ElevatedButton(
+            onPressed: _updateBusLocation,
+            child: const Text("Retry"),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMapWithInfo() {
+    return Stack(
+      children: [
+        FlutterMap(
+          mapController: _mapController,
+          options: MapOptions(
+            initialCenter: _busPosition ?? const LatLng(10.0159, 76.3419),
+            initialZoom: 15.0,
+            interactionOptions: const InteractionOptions(
+              flags: InteractiveFlag.all & ~InteractiveFlag.rotate,
             ),
-            const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: _updateBusLocation,
-              child: const Text("Retry"),
-            ),
-          ],
-        ),
-      )
-          : SingleChildScrollView(
-        child: Column(
+          ),
           children: [
-            Expanded(
-              child: FlutterMap(
-                mapController: _mapController,
-                options: MapOptions(
-                  initialCenter: _busPosition ?? const LatLng(10.0159, 76.3419),
-                  initialZoom: 13.0,
-                ),
-                children: [
-                  TileLayer(
-                    urlTemplate: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-                    subdomains: ['a', 'b', 'c'],
-                  ),
-                  if (_busPosition != null)
-                    MarkerLayer(
-                      markers: [
-                        Marker(
-                          point: _busPosition!,
-                          width: 40.0,
-                          height: 40.0,
-                          child: const Icon(
+            TileLayer(
+              urlTemplate: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+              subdomains: const ['a', 'b', 'c'],
+              userAgentPackageName: 'com.bus.tracker',
+            ),
+            if (_busPosition != null)
+              MarkerLayer(
+                markers: [
+                  Marker(
+                    width: 40.0,
+                    height: 40.0,
+                    point: _busPosition!,
+                    child: Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        const Icon(
+                          Icons.location_pin,
+                          color: Colors.red,
+                          size: 40,
+                        ),
+                        Positioned(
+                          top: 4,
+                          child: Icon(
                             Icons.directions_bus,
-                            color: Colors.red,
-                            size: 30,
+                            color: Colors.white,
+                            size: 20,
                           ),
                         ),
                       ],
                     ),
+                  ),
                 ],
               ),
+          ],
+        ),
+
+        Positioned(
+          bottom: 16,
+          left: 16,
+          right: 16,
+          child: _buildInfoCard(),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildInfoCard() {
+    return Card(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      elevation: 4,
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      "Destination",
+                      style: TextStyle(fontSize: 14, color: Colors.black54),
+                    ),
+                    Text(
+                      widget.routeInfo['destination'] ?? 'Unknown Destination',
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    const Text(
+                      "Bus ID",
+                      style: TextStyle(fontSize: 14, color: Colors.black54),
+                    ),
+                    Text(
+                      widget.busId,
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
             ),
-            const SizedBox(height: 16),
-            SizedBox(
-              height: 200, // Set a fixed height for the Card
-              child: Card(
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                elevation: 4,
-                margin: const EdgeInsets.all(16.0),
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        "Destination",
-                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black54),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        widget.routeInfo['destination'],
-                        style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.black),
-                      ),
-                      const Divider(thickness: 1, color: Colors.grey),
-                      const SizedBox(height: 8),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text("Last Updated", style: TextStyle(fontSize: 16, color: Colors.black54)),
-                              Text(
-                                _busPosition != null ? "Just Now" : 'N/A',
-                                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                              ),
-                            ],
-                          ),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.end,
-                            children: [
-                              const Text("Status", style: TextStyle(fontSize: 16, color: Colors.black54)),
-                              Text(
-                                _busPosition != null ? 'On Route' : 'Not Available',
-                                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.green),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ).animate().fade(duration: 600.ms).slideY(begin: 1, end: 0, curve: Curves.easeOut),
+            const SizedBox(height: 12),
+            const Divider(height: 1, color: Colors.grey),
+            const SizedBox(height: 12),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                _buildInfoItem("Speed", "${_speed?.toStringAsFixed(1) ?? '0'} km/h",
+                    _speed != null && _speed! > 60 ? Colors.red : Colors.green),
+                _buildInfoItem("Updated", _formatLastUpdated(_lastUpdated), Colors.blue),
+                _buildInfoItem("Status", _busPosition != null ? "Moving" : "Stopped",
+                    _busPosition != null ? Colors.green : Colors.orange),
+              ],
             ),
           ],
         ),
-      ),
+      ).animate().fadeIn(duration: 500.ms).slideY(begin: 0.5, end: 0),
     );
+  }
+
+  Widget _buildInfoItem(String label, String value, Color color) {
+    return Column(
+      children: [
+        Text(
+          label,
+          style: const TextStyle(fontSize: 12, color: Colors.black54),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            color: color,
+          ),
+        ),
+      ],
+    );
+  }
+
+  String _formatLastUpdated(String? timestamp) {
+    if (timestamp == null) return "Just now";
+    try {
+      final dateTime = DateTime.parse(timestamp);
+      final now = DateTime.now();
+      final difference = now.difference(dateTime);
+
+      if (difference.inSeconds < 60) return "Just now";
+      if (difference.inMinutes < 60) return "${difference.inMinutes}m ago";
+      if (difference.inHours < 24) return "${difference.inHours}h ago";
+      return "${difference.inDays}d ago";
+    } catch (e) {
+      return timestamp;
+    }
   }
 }

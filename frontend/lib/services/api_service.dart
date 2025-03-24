@@ -106,12 +106,8 @@ class ApiService {
   // Get Bus Location
   Future<Map<String, dynamic>> getBusLocation(String busId) async {
     try {
-      if (_token == null) throw 'Not authenticated';
-
       final response = await http.get(
-        Uri.parse('$baseUrl/bus/location').replace(
-          queryParameters: {'busId': busId},
-        ),
+        Uri.parse('$baseUrl/location/latest/$busId'),
         headers: {
           'Authorization': 'Bearer $_token',
           'Content-Type': 'application/json',
@@ -121,14 +117,10 @@ class ApiService {
       if (response.statusCode == 200) {
         return json.decode(response.body);
       } else {
-        final error = json.decode(response.body);
-        throw error['message'] ?? 'Failed to get bus location';
+        throw 'Failed to load bus location';
       }
     } catch (e) {
-      if (e.toString().contains('Connection refused')) {
-        throw 'Unable to connect to server. Please check your connection.';
-      }
-      throw e.toString();
+      throw 'Connection error: ${e.toString()}';
     }
   }
 
@@ -138,9 +130,7 @@ class ApiService {
       if (_token == null) throw 'Not authenticated';
 
       final response = await http.post(
-        Uri.parse('$baseUrl/bus/locationsend').replace(
-          queryParameters: {'busId': busId},
-        ),
+        Uri.parse('$baseUrl/location/update'),
         headers: {
           'Authorization': 'Bearer $_token',
           'Content-Type': 'application/json',

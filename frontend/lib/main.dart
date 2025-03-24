@@ -52,14 +52,20 @@ class MyApp extends StatelessWidget {
       ),
       GoRoute(
         path: '/no-map',
+        name: NoMapPage.routeName,
         builder: (context, state) {
-          final String destination =
-              state.extra as String? ?? "Unknown Destination";
-          return NoMapScreen(
-            routeInfo: {
-              'destination': destination,
-              'busId': '1', // You might want to pass this from somewhere
-            },
+          final routeInfo = state.extra as Map<String, dynamic>? ?? {
+            'destination': 'Unknown',
+            'busId': '1',
+            'latitude': 0,
+            'longitude': 0,
+            'speed': 0,
+            'updated_at': 'Unknown',
+          };
+
+          return NoMapPage(
+            busId: routeInfo['busId'],
+            routeInfo: routeInfo,
           );
         },
       ),

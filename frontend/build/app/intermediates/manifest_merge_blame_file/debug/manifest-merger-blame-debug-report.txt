@@ -13,20 +13,20 @@
 13         to allow setting breakpoints, to provide hot reload, etc.
 14    -->
 15    <uses-permission android:name="android.permission.INTERNET" />
-15-->/home/heph/Documents/whereismyksrtcapp-main/frontend/android/app/src/main/AndroidManifest.xml:3:5-66
-15-->/home/heph/Documents/whereismyksrtcapp-main/frontend/android/app/src/main/AndroidManifest.xml:3:22-64
+15-->/home/heph/Documents/whereismyksrtcapp/frontend/android/app/src/main/AndroidManifest.xml:3:5-66
+15-->/home/heph/Documents/whereismyksrtcapp/frontend/android/app/src/main/AndroidManifest.xml:3:22-64
 16    <uses-permission android:name="android.permission.CAMERA" />
-16-->/home/heph/Documents/whereismyksrtcapp-main/frontend/android/app/src/main/AndroidManifest.xml:4:5-65
-16-->/home/heph/Documents/whereismyksrtcapp-main/frontend/android/app/src/main/AndroidManifest.xml:4:22-62
+16-->/home/heph/Documents/whereismyksrtcapp/frontend/android/app/src/main/AndroidManifest.xml:4:5-65
+16-->/home/heph/Documents/whereismyksrtcapp/frontend/android/app/src/main/AndroidManifest.xml:4:22-62
 17    <uses-permission android:name="android.permission.FLASHLIGHT" />
-17-->/home/heph/Documents/whereismyksrtcapp-main/frontend/android/app/src/main/AndroidManifest.xml:5:5-69
-17-->/home/heph/Documents/whereismyksrtcapp-main/frontend/android/app/src/main/AndroidManifest.xml:5:22-66
+17-->/home/heph/Documents/whereismyksrtcapp/frontend/android/app/src/main/AndroidManifest.xml:5:5-69
+17-->/home/heph/Documents/whereismyksrtcapp/frontend/android/app/src/main/AndroidManifest.xml:5:22-66
 18    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-18-->/home/heph/Documents/whereismyksrtcapp-main/frontend/android/app/src/main/AndroidManifest.xml:6:5-78
-18-->/home/heph/Documents/whereismyksrtcapp-main/frontend/android/app/src/main/AndroidManifest.xml:6:22-76
+18-->/home/heph/Documents/whereismyksrtcapp/frontend/android/app/src/main/AndroidManifest.xml:6:5-78
+18-->/home/heph/Documents/whereismyksrtcapp/frontend/android/app/src/main/AndroidManifest.xml:6:22-76
 19    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-19-->/home/heph/Documents/whereismyksrtcapp-main/frontend/android/app/src/main/AndroidManifest.xml:7:5-80
-19-->/home/heph/Documents/whereismyksrtcapp-main/frontend/android/app/src/main/AndroidManifest.xml:7:22-78
+19-->/home/heph/Documents/whereismyksrtcapp/frontend/android/app/src/main/AndroidManifest.xml:7:5-80
+19-->/home/heph/Documents/whereismyksrtcapp/frontend/android/app/src/main/AndroidManifest.xml:7:22-78
 20    <!--
 21 Required to query activities that can process text, see:
 22         https://developer.android.com/training/package-visibility and
@@ -35,25 +35,25 @@
 25         In particular, this is used by the Flutter engine in io.flutter.plugin.text.ProcessTextPlugin.
 26    -->
 27    <queries>
-27-->/home/heph/Documents/whereismyksrtcapp-main/frontend/android/app/src/main/AndroidManifest.xml:49:5-54:15
+27-->/home/heph/Documents/whereismyksrtcapp/frontend/android/app/src/main/AndroidManifest.xml:49:5-54:15
 28        <intent>
-28-->/home/heph/Documents/whereismyksrtcapp-main/frontend/android/app/src/main/AndroidManifest.xml:50:9-53:18
+28-->/home/heph/Documents/whereismyksrtcapp/frontend/android/app/src/main/AndroidManifest.xml:50:9-53:18
 29            <action android:name="android.intent.action.PROCESS_TEXT" />
-29-->/home/heph/Documents/whereismyksrtcapp-main/frontend/android/app/src/main/AndroidManifest.xml:51:13-72
-29-->/home/heph/Documents/whereismyksrtcapp-main/frontend/android/app/src/main/AndroidManifest.xml:51:21-70
+29-->/home/heph/Documents/whereismyksrtcapp/frontend/android/app/src/main/AndroidManifest.xml:51:13-72
+29-->/home/heph/Documents/whereismyksrtcapp/frontend/android/app/src/main/AndroidManifest.xml:51:21-70
 30
 31            <data android:mimeType="text/plain" />
-31-->/home/heph/Documents/whereismyksrtcapp-main/frontend/android/app/src/main/AndroidManifest.xml:52:13-50
-31-->/home/heph/Documents/whereismyksrtcapp-main/frontend/android/app/src/main/AndroidManifest.xml:52:19-48
+31-->/home/heph/Documents/whereismyksrtcapp/frontend/android/app/src/main/AndroidManifest.xml:52:13-50
+31-->/home/heph/Documents/whereismyksrtcapp/frontend/android/app/src/main/AndroidManifest.xml:52:19-48
 32        </intent>
 33    </queries>
 34
 35    <uses-feature
-35-->[:mobile_scanner] /home/heph/Documents/whereismyksrtcapp-main/frontend/build/mobile_scanner/intermediates/merged_manifest/debug/AndroidManifest.xml:9:5-11:36
+35-->[:mobile_scanner] /home/heph/Documents/whereismyksrtcapp/frontend/build/mobile_scanner/intermediates/merged_manifest/debug/AndroidManifest.xml:9:5-11:36
 36        android:name="android.hardware.camera"
-36-->[:mobile_scanner] /home/heph/Documents/whereismyksrtcapp-main/frontend/build/mobile_scanner/intermediates/merged_manifest/debug/AndroidManifest.xml:10:9-47
+36-->[:mobile_scanner] /home/heph/Documents/whereismyksrtcapp/frontend/build/mobile_scanner/intermediates/merged_manifest/debug/AndroidManifest.xml:10:9-47
 37        android:required="false" />
-37-->[:mobile_scanner] /home/heph/Documents/whereismyksrtcapp-main/frontend/build/mobile_scanner/intermediates/merged_manifest/debug/AndroidManifest.xml:11:9-33
+37-->[:mobile_scanner] /home/heph/Documents/whereismyksrtcapp/frontend/build/mobile_scanner/intermediates/merged_manifest/debug/AndroidManifest.xml:11:9-33
 38
 39    <permission
 39-->[androidx.core:core:1.13.1] /home/heph/.gradle/caches/transforms-3/6f9a65baaf12c9cf4e60f5516557d16b/transformed/core-1.13.1/AndroidManifest.xml:22:5-24:47
@@ -117,15 +117,15 @@
 90            android:value="2" />
 91
 92        <service
-92-->[:geolocator_android] /home/heph/Documents/whereismyksrtcapp-main/frontend/build/geolocator_android/intermediates/merged_manifest/debug/AndroidManifest.xml:8:9-12:56
+92-->[:geolocator_android] /home/heph/Documents/whereismyksrtcapp/frontend/build/geolocator_android/intermediates/merged_manifest/debug/AndroidManifest.xml:8:9-12:56
 93            android:name="com.baseflow.geolocator.GeolocatorLocationService"
-93-->[:geolocator_android] /home/heph/Documents/whereismyksrtcapp-main/frontend/build/geolocator_android/intermediates/merged_manifest/debug/AndroidManifest.xml:9:13-77
+93-->[:geolocator_android] /home/heph/Documents/whereismyksrtcapp/frontend/build/geolocator_android/intermediates/merged_manifest/debug/AndroidManifest.xml:9:13-77
 94            android:enabled="true"
-94-->[:geolocator_android] /home/heph/Documents/whereismyksrtcapp-main/frontend/build/geolocator_android/intermediates/merged_manifest/debug/AndroidManifest.xml:10:13-35
+94-->[:geolocator_android] /home/heph/Documents/whereismyksrtcapp/frontend/build/geolocator_android/intermediates/merged_manifest/debug/AndroidManifest.xml:10:13-35
 95            android:exported="false"
-95-->[:geolocator_android] /home/heph/Documents/whereismyksrtcapp-main/frontend/build/geolocator_android/intermediates/merged_manifest/debug/AndroidManifest.xml:11:13-37
+95-->[:geolocator_android] /home/heph/Documents/whereismyksrtcapp/frontend/build/geolocator_android/intermediates/merged_manifest/debug/AndroidManifest.xml:11:13-37
 96            android:foregroundServiceType="location" />
-96-->[:geolocator_android] /home/heph/Documents/whereismyksrtcapp-main/frontend/build/geolocator_android/intermediates/merged_manifest/debug/AndroidManifest.xml:12:13-53
+96-->[:geolocator_android] /home/heph/Documents/whereismyksrtcapp/frontend/build/geolocator_android/intermediates/merged_manifest/debug/AndroidManifest.xml:12:13-53
 97        <!--
 98        Service for holding metadata. Cannot be instantiated.
 99        Metadata will be merged from other manifests.
