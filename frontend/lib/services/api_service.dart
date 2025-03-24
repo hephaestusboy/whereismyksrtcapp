@@ -109,7 +109,7 @@ class ApiService {
       if (_token == null) throw 'Not authenticated';
 
       final response = await http.get(
-        Uri.parse('$baseUrl/api/bus/location').replace(
+        Uri.parse('$baseUrl/bus/location').replace(
           queryParameters: {'busId': busId},
         ),
         headers: {
@@ -125,6 +125,46 @@ class ApiService {
         throw error['message'] ?? 'Failed to get bus location';
       }
     } catch (e) {
+      if (e.toString().contains('Connection refused')) {
+        throw 'Unable to connect to server. Please check your connection.';
+      }
+      throw e.toString();
+    }
+  }
+
+  //send current location
+  Future<Map<String, dynamic>> updateBusLocation(String busId, double latitude, double longitude) async {
+    try {
+      if (_token == null) throw 'Not authenticated';
+
+      final response = await http.post(
+        Uri.parse('$baseUrl/bus/locationsend'),
+        headers: {
+          'Authorization': 'Bearer $_token',
+          'Content-Type': 'application/json',
+        },
+        body: json.encode({
+          'busId': busId,
+          'latitude': latitude,
+          'longitude': longitude,
+          'speed' : 45,
+        }),
+      );
+
+      if (kDebugMode) {
+        print('Update Bus Location Response: ${response.body}');
+      }
+
+      if (response.statusCode == 200) {
+        return json.decode(response.body);
+      } else {
+        final error = json.decode(response.body);
+        throw error['message'] ?? 'Failed to update bus location';
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('Update Bus Location Error: $e');
+      }
       if (e.toString().contains('Connection refused')) {
         throw 'Unable to connect to server. Please check your connection.';
       }

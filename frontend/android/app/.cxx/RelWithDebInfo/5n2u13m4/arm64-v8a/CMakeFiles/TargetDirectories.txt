@@ -1,0 +1,2 @@
+/home/heph/Documents/whereismyksrtcapp/frontend/android/app/.cxx/RelWithDebInfo/5n2u13m4/arm64-v8a/CMakeFiles/edit_cache.dir
+/home/heph/Documents/whereismyksrtcapp/frontend/android/app/.cxx/RelWithDebInfo/5n2u13m4/arm64-v8a/CMakeFiles/rebuild_cache.dir

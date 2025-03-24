@@ -1,9 +1,12 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:go_router/go_router.dart';
+import '../services/api_service.dart'; // Import your ApiService
 
 class YesMapPage extends StatefulWidget {
   const YesMapPage({super.key, required this.busId});
@@ -22,12 +25,19 @@ class _YesMapPageState extends State<YesMapPage> {
   LatLng? _currentLocation;
   bool _isLoading = true;
   String? _error;
+  Timer? _locationUpdateTimer;
 
   @override
   void initState() {
     super.initState();
     _requestLocationPermission();
     print('Bus ID: ${widget.busId}'); // Print the received busId
+  }
+
+  @override
+  void dispose() {
+    _locationUpdateTimer?.cancel(); // Cancel the timer when the widget is disposed
+    super.dispose();
   }
 
   /// Requests location permission and retrieves current location
@@ -38,6 +48,10 @@ class _YesMapPageState extends State<YesMapPage> {
       final status = await Permission.location.request();
       if (status.isGranted) {
         await _getCurrentLocation();
+        // Start a timer to periodically update the location
+        _locationUpdateTimer = Timer.periodic(const Duration(seconds: 10), (timer) async {
+          await _getCurrentLocation();
+        });
       } else {
         setState(() {
           _isLoading = false;
@@ -74,6 +88,9 @@ class _YesMapPageState extends State<YesMapPage> {
             _mapController.move(_currentLocation!, 15.0);
           }
         });
+
+        // Send the location to the server
+        await _sendLocationToServer(newLocation);
       }
     } catch (e) {
       if (mounted) {
@@ -82,6 +99,21 @@ class _YesMapPageState extends State<YesMapPage> {
           _error = "Error getting location: $e";
         });
       }
+    }
+  }
+
+  /// Sends the location to the server
+  Future<void> _sendLocationToServer(LatLng location) async {
+    try {
+      final apiService = ApiService();
+      await apiService.updateBusLocation(
+        widget.busId,
+        location.latitude,
+        location.longitude,
+      );
+      print('Location sent to server: ${location.latitude}, ${location.longitude}');
+    } catch (e) {
+      print('Error sending location to server: $e');
     }
   }
 

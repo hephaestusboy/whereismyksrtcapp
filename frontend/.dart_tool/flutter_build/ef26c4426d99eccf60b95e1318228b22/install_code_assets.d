@@ -1,0 +1,1 @@
+ /home/heph/Documents/whereismyksrtcapp/frontend/.dart_tool/flutter_build/ef26c4426d99eccf60b95e1318228b22/native_assets.json: 
