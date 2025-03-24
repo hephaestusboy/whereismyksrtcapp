@@ -40,12 +40,15 @@ class MyApp extends StatelessWidget {
         builder: (context, state) => const NoPage(),
       ),
       GoRoute(
-        path: '/yes_qr',
+        path: YesQRPage.routePath,
         builder: (context, state) => const YesQRPage(),
-      ), // Add more routes as needed
+      ),
       GoRoute(
-        path: '/yes_map',
-        builder: (context, state) => const YesMapPage(),
+        path: YesMapPage.routePath,
+        builder: (context, state) {
+          final String busId = state.extra as String; // Retrieve the busId
+          return YesMapPage(busId: busId);
+        },
       ),
       GoRoute(
         path: '/no-map',

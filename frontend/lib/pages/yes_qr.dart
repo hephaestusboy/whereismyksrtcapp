@@ -1,3 +1,4 @@
+import 'package:bus/pages/yes_map.dart' show YesMapPage;
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
@@ -73,21 +74,14 @@ class _YesQRPageState extends State<YesQRPage> {
                     final List<Barcode> barcodes = capture.barcodes;
                     for (final barcode in barcodes) {
                       // Handle the scanned QR code
-                      print('Barcode detected: ${barcode.rawValue}');
-                      // Navigate to another page or show a dialog with the result
-                      showDialog(
-                        context: context,
-                        builder: (context) => AlertDialog(
-                          title: const Text('QR Code Scanned'),
-                          content: Text('Scanned Data: ${barcode.rawValue}'),
-                          actions: [
-                            TextButton(
-                              onPressed: () => Navigator.pop(context),
-                              child: const Text('OK'),
-                            ),
-                          ],
-                        ),
-                      );
+                      final String? busId = barcode.rawValue;
+                      if (busId != null) {
+                        // Navigate to YesMapPage and pass the busId
+                        context.go(
+                          YesMapPage.routePath,
+                          extra: busId, // Pass the busId as extra data
+                        );
+                      }
                     }
                   },
                 ),

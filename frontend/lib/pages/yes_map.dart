@@ -6,10 +6,12 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:go_router/go_router.dart';
 
 class YesMapPage extends StatefulWidget {
-  const YesMapPage({super.key});
+  const YesMapPage({super.key, required this.busId});
 
   static String routeName = 'yes_map';
   static String routePath = '/yes_map';
+
+  final String busId; // Add a parameter to receive the busId
 
   @override
   State<YesMapPage> createState() => _YesMapPageState();
@@ -25,6 +27,7 @@ class _YesMapPageState extends State<YesMapPage> {
   void initState() {
     super.initState();
     _requestLocationPermission();
+    print('Bus ID: ${widget.busId}'); // Print the received busId
   }
 
   /// Requests location permission and retrieves current location
@@ -65,8 +68,12 @@ class _YesMapPageState extends State<YesMapPage> {
           _error = null;
         });
 
-        // Move map to current location
-        _mapController.move(newLocation, 15.0);
+        // Use WidgetsBinding to ensure the map is rendered before moving
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (_currentLocation != null) {
+            _mapController.move(_currentLocation!, 15.0);
+          }
+        });
       }
     } catch (e) {
       if (mounted) {
