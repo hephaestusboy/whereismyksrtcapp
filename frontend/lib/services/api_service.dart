@@ -138,7 +138,9 @@ class ApiService {
       if (_token == null) throw 'Not authenticated';
 
       final response = await http.post(
-        Uri.parse('$baseUrl/bus/locationsend'),
+        Uri.parse('$baseUrl/bus/locationsend').replace(
+          queryParameters: {'busId': busId},
+        ),
         headers: {
           'Authorization': 'Bearer $_token',
           'Content-Type': 'application/json',
