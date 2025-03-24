@@ -1,0 +1,4 @@
+#Mon Mar 24 11:11:34 IST 2025
+base.0=/home/heph/Documents/whereismyksrtcapp-main/frontend/build/app/intermediates/dex/release/minifyReleaseWithR8/classes.dex
+path.0=classes.dex
+renamed.0=classes.dex

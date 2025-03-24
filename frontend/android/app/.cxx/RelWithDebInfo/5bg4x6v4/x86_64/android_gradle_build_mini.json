@@ -1,0 +1,20 @@
+{
+  "buildFiles": [
+    "/home/heph/.cache/flutter_sdk/packages/flutter_tools/gradle/src/main/groovy/CMakeLists.txt"
+  ],
+  "cleanCommandsComponents": [
+    [
+      "/home/heph/Android/Sdk/cmake/3.22.1/bin/ninja",
+      "-C",
+      "/home/heph/Documents/whereismyksrtcapp-main/frontend/android/app/.cxx/RelWithDebInfo/5bg4x6v4/x86_64",
+      "clean"
+    ]
+  ],
+  "buildTargetsCommandComponents": [
+    "/home/heph/Android/Sdk/cmake/3.22.1/bin/ninja",
+    "-C",
+    "/home/heph/Documents/whereismyksrtcapp-main/frontend/android/app/.cxx/RelWithDebInfo/5bg4x6v4/x86_64",
+    "{LIST_OF_TARGETS_TO_BUILD}"
+  ],
+  "libraries": {}
+}
