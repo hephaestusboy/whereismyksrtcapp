@@ -193,10 +193,10 @@ class _NoMapPageState extends State<NoMapPage> {
                     width: 40.0,
                     height: 40.0,
                     point: _busPosition!,
-                    child: Stack(
+                    child: const Stack(
                       alignment: Alignment.center,
                       children: [
-                        const Icon(
+                        Icon(
                           Icons.location_pin,
                           color: Colors.red,
                           size: 40,
