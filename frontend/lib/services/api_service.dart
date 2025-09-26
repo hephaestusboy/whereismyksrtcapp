@@ -52,17 +52,22 @@ class ApiService {
           'fullName': fullName,
           'email': email,
           'password': password,
-          'role': 1,
+          'role': "1",
         }),
       );
+
       if (kDebugMode) {
-        print(response);
+        print('SignUp Response: ${response.body}');
       }
+
       final data = json.decode(response.body);
-      if (response.statusCode == 201) {
-        _token = data['token'];
+
+      // Check for 200 status (registration initiated)
+      if (response.statusCode == 200) {
+        // Return the message to the UI
         return data;
       } else {
+        // Throw error message from backend
         throw data['message'] ?? 'Sign up failed';
       }
     } catch (e) {
@@ -72,6 +77,7 @@ class ApiService {
       throw e.toString();
     }
   }
+
 
   // Search Buses
   Future<List<Map<String, dynamic>>> searchBuses(
