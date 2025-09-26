@@ -192,20 +192,31 @@ class _CreateAccPageState extends State<CreateAccPage> {
   Future<void> _handleSignUp() async {
     if (_formKey.currentState!.validate()) {
       setState(() => _isLoading = true);
-      
+
       try {
-        await _apiService.signUp(
+        final response = await _apiService.signUp(
           _fullNameController.text.trim(),
           _emailController.text.trim(),
           _passwordController.text,
         );
-        
+
         if (!mounted) return;
-        
-        _showSuccessPopup();
+
+        // ✅ Show popup immediately when server confirms email sent
+        if (response['message'] == "Registration initiated. Verification email has been sent.") {
+          _showSuccessPopup();
+        } else {
+          // fallback if backend sends a different success message
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(response['message'] ?? 'Sign up completed'),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
       } catch (e) {
         if (!mounted) return;
-        
+
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(e.toString()),
@@ -219,6 +230,7 @@ class _CreateAccPageState extends State<CreateAccPage> {
       }
     }
   }
+
 
   void _showSuccessPopup() {
     showDialog(
@@ -234,14 +246,14 @@ class _CreateAccPageState extends State<CreateAccPage> {
               Icon(Icons.check_circle, size: 60, color: Colors.green),
               SizedBox(height: 10),
               Text(
-                "Account Created!",
+                "Verify Email!",
                 style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
                 textAlign: TextAlign.center,
               ),
             ],
           ),
           content: const Text(
-            "Your account has been successfully created.",
+            "Access your Email inorder to complete the Verification.",
             textAlign: TextAlign.center,
           ),
           actions: [
@@ -249,7 +261,7 @@ class _CreateAccPageState extends State<CreateAccPage> {
               child: ElevatedButton(
                 onPressed: () {
                   Navigator.pop(context);
-                  context.go('/popup'); // Redirects to popup.dart
+                  context.go('/sign-in'); // Redirects to signin.dart
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.green,
